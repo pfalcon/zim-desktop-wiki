@@ -206,7 +206,7 @@ _aliases = {
 
 def get_format(name):
 	'''Returns the module object for a specific format.'''
-	# If this method is removes, class names in formats/*.py can be made more explicit
+	# If this method is removed, class names in formats/*.py can be made more explicit
 	#~ print('DEPRECATED: get_format() is deprecated in favor if get_parser() and get_dumper()')
 	return get_format_module(name)
 
@@ -442,7 +442,7 @@ class ParseTree(object):
 
 	def cleanup_headings(self, offset=0, max=6):
 		'''Change the heading levels throughout the tree. This makes sure that
-		al headings are nested directly under their parent (no gaps in the
+		all headings are nested directly under their parent (no gaps in the
 		levels of the headings). Also you can set an offset for the top level
 		and a max depth.
 		'''
@@ -698,8 +698,8 @@ class VisitorStop(Exception):
 
 
 class VisitorSkip(Exception):
-	'''Exception to be raised when the visitor should skip a leaf node
-	and not decent into it.
+	'''Exception to be raised when the visitor should skip a node
+	and not descend into it.
 	'''
 	pass
 
