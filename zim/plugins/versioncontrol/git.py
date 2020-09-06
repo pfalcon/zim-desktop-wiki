@@ -122,6 +122,18 @@ class GITApplicationBackend(VCSApplicationBase):
 		else:
 			return self.pipe(['diff', '--no-ext-diff'] + revision_args + ['--', self.path_arg(file)])
 
+	def diff_cached(self, file=None):
+		"""
+		Runs:
+			git diff --cached --no-ext-diff
+		or
+			git diff --cached --no-ext-diff -- {{PATH}}
+		"""
+		cmd = ['diff', '--cached', '--no-ext-diff']
+		if file is not None:
+			cmd += ['--', self.path_arg(file)]
+		return self.pipe(cmd)
+
 	def ignore(self, file_to_ignore_regexp):
 		"""
 		Build a .gitignore file including the file_to_ignore_content

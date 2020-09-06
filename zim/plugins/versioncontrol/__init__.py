@@ -555,6 +555,20 @@ class VCSApplicationBase(ConnectorMixin):
 		"""
 		raise NotImplementedError
 
+	def diff_cached(self, file=None):
+		"""Returns the diff of the changes which are about to be committed to
+		the repository as a list of strings. Useful as a kind of extended
+		status to present to user before saving a version, to let them review
+		changes and make a good change description.
+		@param file: a L{File} instance representing the file, or None
+		@returns: a list of str() representing the output of the diff operation
+		@implementation: optional
+
+		Example for Git. It could run:
+		- git diff --cached
+		"""
+		return []
+
 	def ignore(self, file_to_ignore_regexp):
 		"""initialize the .XXignore file used by the VCS.
 
@@ -781,6 +795,7 @@ class SaveVersionDialog(Dialog):
 
 		self.vcs.stage()
 		status = self.vcs.status()
+		status += self.vcs.diff_cached()
 		window, textview = ScrolledTextView(text=''.join(status), monospace=True)
 		vbox.add(window)
 
