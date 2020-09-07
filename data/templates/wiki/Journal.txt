@@ -1,24 +1,24 @@
 [% IF journal_plugin.page_type == 'day' -%]
-======= [% strftime("%A %d %b %Y", journal_plugin.date) %] =======
+# [% strftime("%A %d %b %Y", journal_plugin.date) %]
 
 [%- ELSIF journal_plugin.page_type == 'week' -%]
-======= [% strfcal("Week %W %Y", journal_plugin.date) %] =======
+# [% strfcal("Week %W %Y", journal_plugin.date) %]
 [% strftime("%d %B", journal_plugin.date) %] to [% strftime("%d %B", journal_plugin.end_date) %]
 
 [% FOREACH day IN journal_plugin.days() %]
-=== [% strftime("%A %d %B", day) %] ===
+## [% strftime("%A %d %B", day) %]
 
 [% END %]
 
 
 [%- ELSIF journal_plugin.page_type == 'month' -%]
-======= [% strftime("%B %Y", journal_plugin.date) %] =======
+# [% strftime("%B %Y", journal_plugin.date) %]
 
 [%- ELSIF journal_plugin.page_type == 'year' -%]
-======= Year [% strftime("%Y", journal_plugin.date) %] =======
+# Year [% strftime("%Y", journal_plugin.date) %]
 
 [%- ELSE -%]
-======= [% page.basename %] =======
+# [% page.basename %]
 [% gettext("Created") %] [% strftime("%A %d %B %Y") %]
 
 [%- END %]
