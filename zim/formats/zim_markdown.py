@@ -30,9 +30,9 @@ assert WIKI_FORMAT_VERSION != 'zim 0.26' # skip number for historic reasons
 
 info = {
 	'name': 'wiki',
-	'desc': 'Zim Wiki Format',
-	'mimetype': 'text/x-zim-wiki',
-	'extension': 'txt',
+	'desc': 'Zim Markdown Format',
+	'mimetype': 'text/x-zim-markdown',
+	'extension': 'md',
 	'native': True,
 	'import': True,
 	'export': True,
