@@ -658,33 +658,23 @@ class Dumper(TextDumper):
 	}
 
 	TAGS = {
-		EMPHASIS: ('//', '//'),
+		EMPHASIS: ('*', '*'),
 		STRONG: ('**', '**'),
 		MARK: ('__', '__'),
 		STRIKE: ('~~', '~~'),
-		VERBATIM: ("''", "''"),
+		VERBATIM: ("`", "`"),
 		TAG: ('', ''), # No additional annotation (apart from the visible @)
 		SUBSCRIPT: ('_{', '}'),
 		SUPERSCRIPT: ('^{', '}'),
 	}
 
 	def dump(self, tree, file_output=False):
-		# If file_output=True we add meta headers to the output
-		# would be nicer to handle this via a template, but works for now
-		if file_output:
-			header = (
-				('Content-Type', 'text/x-zim-wiki'),
-				('Wiki-Format', WIKI_FORMAT_VERSION),
-			)
-			return [dump_header_lines(header, getattr(tree, 'meta', {})), '\n'] \
-						+ TextDumper.dump(self, tree)
-		else:
-			return TextDumper.dump(self, tree)
+		return TextDumper.dump(self, tree)
 
 	def dump_pre(self, tag, attrib, strings):
-		# Indent and wrap with "'''" lines
-		strings.insert(0, "'''\n")
-		strings.append("'''\n")
+		# Indent and wrap with "```" lines
+		strings.insert(0, "```\n")
+		strings.append("```\n")
 		strings = self.dump_indent(tag, attrib, strings)
 		return strings
 
@@ -695,9 +685,8 @@ class Dumper(TextDumper):
 			level = 1
 		elif level > 5:
 			level = 5
-		tag = '=' * (7 - level)
+		tag = '#' * level
 		strings.insert(0, tag + ' ')
-		strings.append(' ' + tag)
 		return strings
 
 	def dump_link(self, tag, attrib, strings=None):
