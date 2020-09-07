@@ -198,13 +198,13 @@ class WikiParser(object):
 		descent = lambda *a: self.nested_inline_parser_below_link(*a)
 		self.nested_inline_parser_below_link = (
 			Rule(TAG, r'(?<!\S)@\w+', process=self.parse_tag)
-			| Rule(EMPHASIS, r'//(?!/)(.*?)(?<!:)//', descent=descent) # no ':' at the end (ex: 'http://')
+			| Rule(EMPHASIS, r'\*(?!\*)(.*?)(?<!:)\*', descent=descent) # no ':' at the end (ex: 'http://')
 			| Rule(STRONG, r'\*\*(?!\*)(.*?)\*\*', descent=descent)
 			| Rule(MARK, r'__(?!_)(.*?)__', descent=descent)
 			| Rule(SUBSCRIPT, r'_\{(?!~)(.+?)\}', descent=descent)
 			| Rule(SUPERSCRIPT, r'\^\{(?!~)(.+?)\}', descent=descent)
 			| Rule(STRIKE, r'~~(?!~)(.+?)~~', descent=descent)
-			| Rule(VERBATIM, r"''(?!')(.+?)''")
+			| Rule(VERBATIM, r"`(?!`)(.+?)`")
 
 		)
 
@@ -214,13 +214,13 @@ class WikiParser(object):
 			| Rule(LINK, r'\[\[(?!\[)(.*?\]*)\]\]', process=self.parse_link)
 			| Rule(IMAGE, r'\{\{(?!\{)(.*?)\}\}', process=self.parse_image)
 			| Rule(TAG, r'(?<!\S)@\w+', process=self.parse_tag)
-			| Rule(EMPHASIS, r'//(?!/)(.*?)(?<!:)//', descent=descent) # no ':' at the end (ex: 'http://')
+			| Rule(EMPHASIS, r'\*(?!\*)(.*?)(?<!:)\*', descent=descent) # no ':' at the end (ex: 'http://')
 			| Rule(STRONG, r'\*\*(?!\*)(.*?)\*\*', descent=descent)
 			| Rule(MARK, r'__(?!_)(.*?)__', descent=descent)
 			| Rule(SUBSCRIPT, r'_\{(?!~)(.+?)\}', descent=descent)
 			| Rule(SUPERSCRIPT, r'\^\{(?!~)(.+?)\}', descent=descent)
 			| Rule(STRIKE, r'~~(?!~)(.+?)~~', descent=descent)
-			| Rule(VERBATIM, r"''(?!')(.+?)''")
+			| Rule(VERBATIM, r"`(?!`)(.+?)`")
 		)
 
 	def _init_intermediate_parser(self):
@@ -266,9 +266,9 @@ class WikiParser(object):
 		# Top level parser, to break up block level items
 		p = RuleParser(
 			Rule(VERBATIM_BLOCK, r'''
-				^(?P<pre_indent>\t*) \'\'\' \s*?				# 3 "'"
+				^(?P<pre_indent>\t*) \`\`\` \s*?				# 3 "`"
 				( (?:^.*\n)*? )									# multi-line text
-				^(?P=pre_indent) \'\'\' \s*? \n					# another 3 "'" with matching indent
+				^(?P=pre_indent) \`\`\` \s*? \n					# another 3 "`" with matching indent
 				''',
 				process=self.parse_pre
 			),
@@ -280,7 +280,7 @@ class WikiParser(object):
 				process=self.parse_object
 			),
 			Rule(HEADING,
-				r'^( ==+ [\ \t]+ \S.*? ) [\ \t]* =* \n',		# "==== heading ===="
+				r'^( \#+ [\ \t]+ \S.*? ) [\ \t]* \n',		# "### heading"
 				process=self.parse_heading
 			),
 			# standard table format
@@ -300,16 +300,12 @@ class WikiParser(object):
 
 	def parse_heading(self, builder, text):
 		'''Parse heading and determine it's level'''
-		assert text.startswith('=')
+		assert text.startswith('#')
 		for i, c in enumerate(text):
-			if c != '=':
+			if c != '#':
 				break
 
-		level = 7 - min(6, i)
-			# == is level 5
-			# === is level 4
-			# ...
-			# ======= is level 1
+		level = min(5, i)
 		text = text[i:].lstrip() + '\n'
 
 		builder.start(HEADING, {'level': level})
