@@ -323,6 +323,7 @@ class TagCloudItem(Gtk.ToggleButton):
 	def __init__(self, indextag):
 		Gtk.ToggleButton.__init__(self, indextag.name, use_underline=False)
 		self.set_relief(Gtk.ReliefStyle.NONE)
+		self.set_border_width(1)
 		self.indextag = indextag
 
 		def update_label(self):
