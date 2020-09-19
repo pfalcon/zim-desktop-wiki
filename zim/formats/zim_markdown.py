@@ -211,6 +211,8 @@ class WikiParser(object):
 		descent = lambda *a: self.inline_parser(*a)
 		return (
 			Rule(LINK, my_url_re, process=self.parse_url)
+			| Rule(IMAGE, r'\!\[(?!\[)(.*?)\]\((.*?)\)', process=self.parse_md_image)
+			| Rule(LINK, r'\[(?!\[)(.*?\]*)\]\((.*?)\)', process=self.parse_md_link)
 			| Rule(LINK, r'\[\[(?!\[)(.*?\]*)\]\]', process=self.parse_link)
 			| Rule(IMAGE, r'\{\{(?!\{)(.*?)\}\}', process=self.parse_image)
 			| Rule(TAG, r'(?<!\S)@\w+', process=self.parse_tag)
@@ -561,6 +563,23 @@ class WikiParser(object):
 			self.nested_inline_parser_below_link(builder, text)
 			builder.end(LINK)
 
+	def parse_md_link(self, builder, text, href):
+		if not text or text.isspace():
+			return
+
+		if text.endswith(']'):
+			delta = text.count(']') - text.count('[')
+			if delta > 0:
+				self.inline_parser.backup_parser_offset(delta)
+				text = text[:-delta]
+
+		if href is None:
+			builder.append(LINK, {'href': text}, text)
+		else:
+			builder.start(LINK, {'href': href})
+			self.nested_inline_parser_below_link(builder, text)
+			builder.end(LINK)
+
 	@staticmethod
 	def parse_image(builder, text):
 		if '|' in text:
@@ -568,6 +587,19 @@ class WikiParser(object):
 		else:
 			url, text = text, None
 
+		attrib = ParserClass.parse_image_url(url)
+		if text:
+			attrib['alt'] = text
+
+		if attrib.get('type'):
+			# Backward compatibility of image generators < zim 0.70
+			attrib['type'] = 'image+' + attrib['type']
+			builder.append(OBJECT, attrib)
+		else:
+			builder.append(IMAGE, attrib)
+
+	@staticmethod
+	def parse_md_image(builder, text, url):
 		attrib = ParserClass.parse_image_url(url)
 		if text:
 			attrib['alt'] = text
@@ -700,7 +732,7 @@ class Dumper(TextDumper):
 			else:
 				return ('[[', href, ']]')
 		else:
-			return ('[[', href, '|') + tuple(strings) + (']]',)
+			return ('[',) + tuple(strings) + ('](', href, ')')
 
 	def dump_img(self, tag, attrib, strings=None):
 		src = attrib['src'] or ''
@@ -713,15 +745,12 @@ class Dumper(TextDumper):
 			elif v: # skip None, "" and 0
 				data = url_encode(str(v), mode=URL_ENCODE_DATA)
 				opts.append('%s=%s' % (k, data))
+		if not alt:
+			alt = src
 		if opts:
 			src += '?%s' % '&'.join(opts)
 
-		if alt:
-			return ('{{', src, '|', alt, '}}')
-		else:
-			return('{{', src, '}}')
-
-		# TODO use text for caption (with full recursion)
+		return ('![', alt, '](', src, ')')
 
 	def dump_object_fallback(self, tag, attrib, strings=None):
 		assert "type" in attrib, "Undefined type of object"
