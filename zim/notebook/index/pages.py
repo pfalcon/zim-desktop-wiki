@@ -137,7 +137,10 @@ class PagesIndexer(IndexerBase):
 			file = self.layout.root.file(filerow['path'])
 			format = self.layout.get_format(file)
 			mtime = file.mtime()
-			tree = format.Parser().parse(file.read())
+			parser = format.Parser()
+			parser.page = pagename
+			parser.layout = self.layout
+			tree = parser.parse(file.read())
 			self.update_page(pagename, mtime, tree)
 		else:
 			pass # some conflict file changed

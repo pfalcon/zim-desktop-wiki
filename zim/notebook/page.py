@@ -577,6 +577,8 @@ class Page(Path, SignalEmitter):
 				return None
 			else:
 				parser = self.format.Parser()
+				parser.page = self
+				parser.layout = self.notebook.layout
 				self._parsetree = parser.parse(text, file_input=True)
 				self._meta = self._parsetree.meta
 				assert self._meta is not None
