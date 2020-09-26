@@ -500,7 +500,11 @@ class Page(Path, SignalEmitter):
 				now = datetime.now()
 				tree.meta['Creation-Date'] = now.isoformat()
 
-			lines = self.format.Dumper().dump(tree, file_output=True)
+			dumper = self.format.Dumper()
+			dumper.page = self
+			dumper.notebook = self.notebook
+			dumper.layout = self.notebook.layout
+			lines = dumper.dump(tree, file_output=True)
 			self._last_etag = self.source_file.writelines_with_etag(lines, self._last_etag)
 			self._meta = tree.meta
 		else:
