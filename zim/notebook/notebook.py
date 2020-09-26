@@ -426,6 +426,7 @@ class Notebook(ConnectorMixin, SignalEmitter):
 			folder = self.layout.get_attachments_folder(path)
 			format = self.layout.get_format(file)
 			page = Page(path, False, file, folder, format)
+			page.notebook = self
 			try:
 				indexpath = self.pages.lookup_by_pagename(path)
 			except IndexNotFoundError:
