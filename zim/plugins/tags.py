@@ -322,6 +322,7 @@ class TagCloudItem(Gtk.ToggleButton):
 
 	def __init__(self, indextag):
 		Gtk.ToggleButton.__init__(self, indextag.name, use_underline=False)
+		self.get_child().set_markup('<span background="#a3ffb1">' + indextag.name + '</span>')
 		self.set_relief(Gtk.ReliefStyle.NONE)
 		self.set_border_width(1)
 		self.indextag = indextag
@@ -330,9 +331,9 @@ class TagCloudItem(Gtk.ToggleButton):
 			# Make button text bold when active
 			label = self.get_child()
 			if self.get_active():
-				label.set_markup('<b>' + label.get_text() + '</b>')
+				label.set_markup('<span background="#ffa3ce"><b>' + label.get_text() + '</b></span>')
 			else:
-				label.set_text(label.get_text())
+				label.set_markup('<span background="green">' + label.get_text() + '</span>')
 					# get_text() gives string without markup
 
 		self.connect_after('toggled', update_label)
