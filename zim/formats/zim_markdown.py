@@ -15,6 +15,10 @@ from zim.parsing import url_encode, URL_ENCODE_DATA, \
 from zim.parsing import url_re as old_url_re
 from zim.formats import *
 from zim.formats.plain import Dumper as TextDumper
+from zim.fs import FilePath
+from zim.newfs import LocalFolder
+from zim.notebook.page import Path
+from zim.notebook import HRef
 
 old_url_re = old_url_re.p
 
@@ -564,8 +568,23 @@ class WikiParser(object):
 			builder.end(LINK)
 
 	def parse_md_link(self, builder, text, href):
+		logger.debug("parse_md_link: page: %r, text: %r, href: %r", self.page, text, href)
 		if not text or text.isspace():
 			return
+
+		# TODO: Check for URLs, absolute paths (including user home dir paths).
+		if href.endswith(".md"):
+			# Convert file path relative to self.page file path
+			# to Zim's internal format of 'Page1:Page2'.
+
+			# self.page can be a Path if called from Indexer
+			#layout = self.page.notebook.layout
+			layout = self.layout
+			linked_path = FilePath((layout.map_page(self.page)[0].dirname, href))
+			logger.debug("linked page full path: %r", linked_path)
+			linked_page = layout.map_file(linked_path)[0]
+			href = str(linked_page)
+			logger.debug("parse_md_link: converted href: %r", href)
 
 		if text.endswith(']'):
 			delta = text.count(']') - text.count('[')
@@ -598,8 +617,16 @@ class WikiParser(object):
 		else:
 			builder.append(IMAGE, attrib)
 
-	@staticmethod
-	def parse_md_image(builder, text, url):
+	def parse_md_image(self, builder, text, url):
+		# self.page can be a Path if called from Indexer
+		#layout = self.page.notebook.layout
+		layout = self.layout
+		att_folder = layout.map_page(self.page)[1]
+		rel_att_path = att_folder.basename
+		logger.debug("parse_md_image: page: %r, att folder: %r, rel path: %r", self.page, att_folder, rel_att_path)
+		if url.startswith(rel_att_path + "/"):
+			url = "." + url[len(rel_att_path):]
+
 		attrib = ParserClass.parse_image_url(url)
 		if text:
 			attrib['alt'] = text
@@ -663,6 +690,8 @@ class Parser(ParserClass):
 		else:
 			mywikiparser = WikiParser(backward_indented_blocks=True, backward_url_parsing=True)
 
+		mywikiparser.page = self.page
+		mywikiparser.layout = self.layout
 		builder = ParseTreeBuilder(partial=partial)
 		mywikiparser(builder, input)
 
@@ -722,9 +751,24 @@ class Dumper(TextDumper):
 		return strings
 
 	def dump_link(self, tag, attrib, strings=None):
+		logger.debug("dump_link: %r, %r, %r", tag, attrib, strings)
 		assert 'href' in attrib, \
 			'BUG: link misses href: %s "%s"' % (attrib, strings)
 		href = attrib['href']
+
+		type = link_type(href)
+		logger.debug("layout root: %s, link type: %s", self.layout.root.path, type)
+		if type == "page":
+			# Convert page reference from Zim's internal format
+			# of 'Page1:Page2' to a filesystem path relative to the
+			# current page, e.g. 'Page2.md' or '../Page1/Page2.md'.
+			linked_path = self.notebook.pages.resolve_link(self.page, HRef.new_from_wiki_link(href))
+			logger.debug("%r links to %r" % (self.page, linked_path))
+			my_file, _ = self.layout.map_page(self.page)
+			link_file, _ = self.layout.map_page(linked_path)
+			relpath = link_file.relpath(LocalFolder(my_file.dirname), allowupward=True)
+			logger.debug("%r links to %r, relpath: %r", my_file, link_file, relpath)
+			href = relpath
 
 		if not strings or href == ''.join(strings):
 			if is_url(href):
@@ -735,6 +779,9 @@ class Dumper(TextDumper):
 			return ('[',) + tuple(strings) + ('](', href, ')')
 
 	def dump_img(self, tag, attrib, strings=None):
+		att_folder = self.page.attachments_folder._inner_fs_object
+		rel_att_path = att_folder.basename
+		logger.debug("dump_img: page: %r, att folder: %r, rel path: %r", self.page, att_folder, rel_att_path)
 		src = attrib['src'] or ''
 		alt = attrib.get('alt')
 		opts = []
@@ -747,6 +794,8 @@ class Dumper(TextDumper):
 				opts.append('%s=%s' % (k, data))
 		if not alt:
 			alt = src
+		if src.startswith("./"):
+			src = src.replace(".", rel_att_path, 1)
 		if opts:
 			src += '?%s' % '&'.join(opts)
 
