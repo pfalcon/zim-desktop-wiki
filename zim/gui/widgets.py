@@ -2763,18 +2763,18 @@ class Dialog(Gtk.Dialog, ConnectorMixin):
 	dialog types).
 
 	A minimal sub-class should implement a constructor which calls
-	L{Dialog.__init__()} and L{Dialog.add_form()} to defined the dialog,
+	L{Dialog.__init__()} and L{Dialog.add_form()} to define the dialog,
 	and implements C{do_response_ok()} to handle the result.
 
 	The C{Dialog} class takes care of calling
-	L{ConnecterMixin.disconnect_all()} when it is destroyed. So
+	L{ConnectorMixin.disconnect_all()} when it is destroyed. So
 	sub-classes can use the L{ConnectorMixin} methods and all callbacks
 	will be cleaned up after the dialog.
 
 	@ivar vbox: C{Gtk.VBox} for main widgets of the dialog
 	@ivar form: L{InputForm} added by C{add_form()}
 	@ivar uistate: L{ConfigDict} to store state of the dialog, persistent
-	per notebook. The size and position of the dialog are stored as
+	per notebook. The size and position of the dialog are stored
 	automatically in this dict already.
 	@ivar result: result to be returned by L{run()}
 	@ivar destroyed: when C{True} the dialog is already destroyed
