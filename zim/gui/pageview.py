@@ -7477,6 +7477,9 @@ class InsertLinkDialog(Dialog):
 				self._selected_text = False
 			else:
 				href = text
+				m = re.match(r"(\d\d\d\d)-(\d\d)-(\d\d)", text)
+				if m:
+					href = "Journal:%s:%s:%s" % (m.group(1), m.group(2), m.group(3))
 				self._selected_text = True
 		else:
 			self._selection_bounds = None
