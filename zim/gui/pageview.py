@@ -7431,7 +7431,7 @@ class InsertLinkDialog(Dialog):
 		else:
 			title = _('Insert Link') # T: Dialog title
 
-		Dialog.__init__(self, parent, title, button=_('_Link'))  # T: Dialog button
+		Dialog.__init__(self, parent, title, button=_('_Link'), use_default_button=True)  # T: Dialog button
 
 		self.add_form(
 			[
@@ -7443,6 +7443,7 @@ class InsertLinkDialog(Dialog):
 			},
 			notebook=pageview.notebook
 		)
+		self.form.set_default_activate('href')
 
 		# Hook text entry to copy text from link when apropriate
 		self.form.widgets['href'].connect('changed', self.on_href_changed)
