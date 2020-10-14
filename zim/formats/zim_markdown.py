@@ -177,9 +177,9 @@ class WikiParser(object):
 
 	BULLETS = {
 		'[ ]': UNCHECKED_BOX,
-		'[x]': XCHECKED_BOX,
-		'[*]': CHECKED_BOX,
-		'[>]': MIGRATED_BOX,
+		'[#]': XCHECKED_BOX,  # Not a standard Markdown syntax
+		'[x]': CHECKED_BOX,
+		'[>]': MIGRATED_BOX,  # Not a standard Markdown syntax
 		'*': BULLET,
 	}
 
@@ -508,6 +508,14 @@ class WikiParser(object):
 				builder.start(listtype, attrib)
 				first = False
 
+			# See if followed by a "checkbox" syntax, and then use
+			# it as bullet, per Zim content model.
+			if bullet in ('*', '-') and text.startswith('[') and text[3].isspace():
+				for b in self.BULLETS:
+					if text.startswith(b):
+						bullet = b
+						text = text[len(b) + 1:]
+
 			mylevel = len(prefix)
 			if mylevel > level:
 				self.parse_list_lines(builder, lines, level + 1) # recurs
@@ -711,10 +719,10 @@ class Parser(ParserClass):
 class Dumper(TextDumper):
 
 	BULLETS = {
-		UNCHECKED_BOX: '[ ]',
-		XCHECKED_BOX: '[x]',
-		CHECKED_BOX: '[*]',
-		MIGRATED_BOX: '[>]',
+		UNCHECKED_BOX: '* [ ]',
+		XCHECKED_BOX: '* [#]',  # Not a standard Markdown syntax
+		CHECKED_BOX: '* [x]',
+		MIGRATED_BOX: '* [>]',  # Not a standard Markdown syntax
 		BULLET: '*',
 	}
 
