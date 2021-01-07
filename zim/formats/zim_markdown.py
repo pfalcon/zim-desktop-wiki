@@ -580,6 +580,12 @@ class WikiParser(object):
 		if not text or text.isspace():
 			return
 
+		parts = href.split("#", 1)
+		href = parts[0]
+		anchor = ""
+		if len(parts) == 2:
+			anchor = "#" + parts[1]
+
 		# TODO: Check for URLs, absolute paths (including user home dir paths).
 		if href.endswith(".md"):
 			# Convert file path relative to self.page file path
@@ -599,6 +605,8 @@ class WikiParser(object):
 			if delta > 0:
 				self.inline_parser.backup_parser_offset(delta)
 				text = text[:-delta]
+
+		href += anchor
 
 		if href is None:
 			builder.append(LINK, {'href': text}, text)
@@ -764,9 +772,15 @@ class Dumper(TextDumper):
 			'BUG: link misses href: %s "%s"' % (attrib, strings)
 		href = attrib['href']
 
+		parts = href.split("#", 1)
+		href = parts[0]
+		anchor = ""
+		if len(parts) == 2:
+			anchor = "#" + parts[1]
+
 		type = link_type(href)
 		logger.debug("layout root: %s, link type: %s", self.layout.root.path, type)
-		if type == "page":
+		if href and type == "page":
 			# Convert page reference from Zim's internal format
 			# of 'Page1:Page2' to a filesystem path relative to the
 			# current page, e.g. 'Page2.md' or '../Page1/Page2.md'.
@@ -777,6 +791,8 @@ class Dumper(TextDumper):
 			relpath = link_file.relpath(LocalFolder(my_file.dirname), allowupward=True)
 			logger.debug("%r links to %r, relpath: %r", my_file, link_file, relpath)
 			href = relpath
+
+		href += anchor
 
 		if not strings or href == ''.join(strings):
 			if is_url(href):
