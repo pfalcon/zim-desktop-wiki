@@ -1,3 +1,59 @@
+Zim-markdown Branch
+===================
+
+This is [Zim Wiki](https://github.com/zim-desktop-wiki/zim-desktop-wiki)
+branch/fork with Markdown format support for page content. Note that both
+the Markdown format and the original Zim-wiki format are supported
+(original format at least for reading, page templates, etc. may be already
+updated for Markdown). Which format to use is a per-notebook setting. The
+default format remains Zim-wiki. To switch a particular notebook to
+Markdown format, settings in notebook's `notebook.zim` config file should
+be updated. Below are detailed instructions on doing so.
+
+To create a Markdown notebook:
+
+1. Clone this repository:
+`git clone https://github.com/pfalcon/zim-desktop-wiki zim-markdown`
+(this will clone into `zim-markdown` directory).
+2. Change into `zim-markdown` and run `./zim-debug.sh` (Linux assumed).
+Alternatively, run `python3 zim.py --standalone --debug`.
+3. In menu, choose File -> Open another notebook...
+4. In the "Open Notebook" dialog, press "Add" button.
+5. Enter name "MarkdownNotes" for the notebook. Note the filesystem
+folder for the notebook (e.g. `~/Notebooks/MarkdownNotes`).
+6. Quit Zim.
+7. Go to the notebook folder noted above using any file manager.
+8. In the folder, there should be file named `notebook.zim`.
+9. Open it in any editor.
+10. In the file, there should be lines:
+```
+default_file_format=zim-wiki
+default_file_extension=.txt
+```
+replace them with the following lines:
+```
+default_file_format=zim_markdown
+default_file_extension=.md
+```
+11. Restart Zim. Open the notebook you modified.
+12. For each newly created page, you need to press Ctrl+R for Markdown
+formatting to go into effect (a known issue, or a feature, depending
+on how you look into it).
+13. Type some text, apply some formatting. Go to the notebook folder
+and behold that you have e.g. `Home.md` file, which contains Markdown
+formatting inside.
+14. If you have existing Markdown files, you can just drop them into
+the notebook folder, and press Ctrl+R in Zim for it to pick up them
+15. Note that not all Markdown formatting is supported as of now, visit
+the [bugtracker](https://github.com/pfalcon/zim-desktop-wiki/issues)
+to stay in loop of the known issues.
+
+
+
+Below is the original Zim README.
+
+---
+
 Zim - A Desktop Wiki Editor
 ===========================
 
