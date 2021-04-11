@@ -284,7 +284,7 @@ class TagsView(IndexView):
 			'SELECT tagsources.source '
 			'FROM tagsources JOIN pages ON tagsources.source=pages.id '
 			'WHERE tagsources.tag = ? '
-			'ORDER BY pages.sortkey, LENGTH(pages.name), pages.name',
+			'ORDER BY pages.name',
 			(tag.id,)
 		):
 			yield self._pages.get_pagename(row['source'])
@@ -457,7 +457,7 @@ class TaggedPagesTreeModelMixin(TagsTreeModelBase):
 					INNER JOIN tagsources ON pages.id = tagsources.source
 					WHERE tagsources.tag %s
 					GROUP BY source HAVING count(tag) = ?
-					ORDER BY sortkey, LENGTH(name), name LIMIT 20 OFFSET ?
+					ORDER BY name LIMIT 20 OFFSET ?
 				''' % self._tagquery,
 				(len(self._tagids), offset,)
 			)):
@@ -675,7 +675,7 @@ class TagsTreeModelMixin(TagsTreeModelBase):
 					SELECT DISTINCT pages.* FROM pages
 					INNER JOIN tagsources ON pages.id = tagsources.source
 					WHERE tagsources.tag = ?
-					ORDER BY sortkey, LENGTH(name), name LIMIT 20 OFFSET ?
+					ORDER BY name LIMIT 20 OFFSET ?
 				''',
 				(tag_iter.row['id'], offset,)
 			)):
@@ -757,7 +757,7 @@ class TagsTreeModelMixin(TagsTreeModelBase):
 								or (sortkey = ? and LENGTH(name) < ?)
 								or (sortkey = ? and LENGTH(name) = ? and name < ?)
 							)
-							ORDER BY sortkey, LENGTH(name), name
+							ORDER BY name
 						''',
 						(tagid,
 							row['sortkey'],
