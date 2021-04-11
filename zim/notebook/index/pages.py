@@ -576,7 +576,7 @@ class PagesView(IndexView):
 	def match_all_pages(self, text, limit=10):
 		'''Like C{match_pages()} except not limited a specific namespace'''
 		for row in self.db.execute(
-			'SELECT * FROM pages WHERE lowerbasename LIKE ? ORDER BY length(name), sortkey, name LIMIT ?',
+			'SELECT * FROM pages WHERE lowerbasename LIKE ? ORDER BY name LIMIT ?',
 			("%%%s%%" % text.lower(), limit)
 		):
 			yield PageIndexRecord(row)
@@ -933,14 +933,14 @@ class PagesTreeModelMixin(TreeModelMixinBase):
 		if self._REVERSE:
 			rows = self.db.execute('''
 				SELECT * FROM pages WHERE parent=?
-				ORDER BY sortkey DESC, name DESC LIMIT 20 OFFSET ?
+				ORDER BY name DESC LIMIT 20 OFFSET ?
 				''',
 				(parent_id, offset)
 			)
 		else:
 			rows = self.db.execute('''
 				SELECT * FROM pages WHERE parent=?
-				ORDER BY sortkey ASC, name ASC LIMIT 20 OFFSET ?
+				ORDER BY name ASC LIMIT 20 OFFSET ?
 				''',
 				(parent_id, offset)
 			)
