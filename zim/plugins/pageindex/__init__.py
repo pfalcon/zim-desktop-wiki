@@ -21,7 +21,7 @@ from zim.actions import PRIMARY_MODIFIER_MASK
 
 from zim.gui.pageview import PageViewExtension
 from zim.gui.widgets import BrowserTreeView, ScrolledWindow, \
-	encode_markup_text, ErrorDialog, \
+	encode_markup_text, ErrorDialog, QuestionDialog, \
 	WindowSidePaneWidget, LEFT_PANE, PANE_POSITIONS
 from zim.gui.clipboard import Clipboard, pack_urilist, unpack_urilist, \
 	INTERNAL_PAGELIST_TARGET_NAME, INTERNAL_PAGELIST_TARGET
@@ -524,17 +524,25 @@ class PageTreeView(BrowserTreeView):
 		iter = model.get_iter(treepath)
 		path = model.get_indexpath(iter)
 
+		confirm_msg = _('Perform page movement?')
 		if position == Gtk.TreeViewDropPosition.BEFORE:
 			logger.debug('Dropped %s before %s', source, path)
 			dest = path.parent + source.basename
+			confirm_msg = _('Move page "%s" ("%s") to the same level as "%s"?') % (
+				source.basename, source, path
+			)
 		elif position == Gtk.TreeViewDropPosition.AFTER:
 			logger.debug('Dropped %s after %s', source, path)
 			dest = path.parent + source.basename
+			confirm_msg = _('Move page "%s" ("%s") to the same level as "%s"?') % (
+				source.basename, source, path
+			)
 		else:
 			# Gtk.TreeViewDropPosition.INTO_OR_BEFORE
 			# or Gtk.TreeViewDropPosition.INTO_OR_AFTER
 			logger.debug('Dropped %s into %s', source, path)
 			dest = path + source.basename
+			confirm_msg = _('Move page "%s" under page "%s"?') % (source, path)
 
 		if path == source or dest == source:
 			# TODO - how to get the row image float back like when drop is not allowed ?
@@ -542,6 +550,15 @@ class PageTreeView(BrowserTreeView):
 				logger.debug('Dropped page onto itself')
 			else:
 				logger.debug('Paths have same namespace, no reordering')
+			dragcontext.finish(False, False, time) # NOK
+			return
+
+		# As there's no undo support for page movements, and some
+		# positioning devices (e.g. touchpads) are notorious for
+		# mis-registering cursor moves as drags, let user confirm
+		# they really intend to move pages.
+		ok = QuestionDialog(self, confirm_msg).run()
+		if not ok:
 			dragcontext.finish(False, False, time) # NOK
 			return
 
