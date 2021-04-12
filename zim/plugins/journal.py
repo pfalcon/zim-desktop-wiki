@@ -257,6 +257,8 @@ class JournalPageViewExtension(PageViewExtension):
 			self.add_sidepane_widget(self.calendar_widget, 'pane')
 		elif not show_pane and widget_visible:
 			self.remove_sidepane_widget(self.calendar_widget)
+		else:
+			self.calendar_widget.on_month_changed(self.calendar_widget.calendar)
 
 	def _check_show_pane(self):
 		if self.plugin.preferences['hide_if_empty']:
@@ -423,6 +425,7 @@ class CalendarWidget(Gtk.VBox, WindowSidePaneWidget):
 		else:
 			self.calendar.select_day(0)
 			self.treeview.get_selection().unselect_all()
+		self.on_month_changed(self.calendar)
 
 
 class CalendarWidgetModel(object):
