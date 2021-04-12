@@ -538,7 +538,7 @@ class PagesView(IndexView):
 
 	def _list_pages(self, page_id):
 		for row in self.db.execute(
-			'SELECT * FROM pages WHERE parent=? ORDER BY sortkey, name',
+			'SELECT * FROM pages WHERE parent=? AND is_link_placeholder=0 ORDER BY sortkey, name',
 			(page_id,)
 		):
 			yield PageIndexRecord(row)
